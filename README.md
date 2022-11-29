@@ -1,7 +1,7 @@
 # Бот-магазин для Telegram
 
-Поболтать с ботом можно в [телеграме](https://t.me/echoquiz_bot)
 Бот умеет показывать товары в продаже, их описания, добавлять (или убирать) эти товары в корзину, суммируя их количество и цену и запрашивать имейл для выставления счета.
+Пример бота-магазина для [продажи рыбы](https://t.me/fishfishfishbot)
 
 ## Как установить
 
@@ -53,11 +53,10 @@ CLIENT_ID=88f8wdcd3283f484nc429ncvt500rfhufhuw38392m
 CLIENT_SECRET=6d7dfwn843mxyg5h,1234546789tnf3mccfhew
 ELASTICPATH_TOKEN=ff8h8f38cng5mhecn4gm943xqh4w9t4q3pqhmrhx
 ```
-Параметр `QUIZ_DIRECTORY` - название папки с файлами вопросов.
 
 ## Как пользоваться
 
-Создайте в Elasticpath товары в разделе PRODUCT EXPERIENCE MANAGER, затем Product book с ценами товаров, иерархию и каталог. В каталоге должны отобразится товары в статусе Live. 
+Создайте в Elasticpath товары в разделе `PRODUCT EXPERIENCE MANAGER`, затем Product book с ценами товаров, иерархию и каталог. В каталоге должны отобразится товары в статусе `Live`. 
 
 Запустите telegram бота:
 
