@@ -12,10 +12,11 @@ def get_elasticpath_token(client_id, client_secret):
     token = response.json()['access_token']
     return token
 
+
 def get_products_names_ids(token):
 
     headers = {
-    'Authorization': f'Bearer {token}',
+        'Authorization': f'Bearer {token}',
     }
     
     products = requests.get('https://api.moltin.com/pcm/products', headers=headers)
@@ -36,9 +37,7 @@ def get_products_prices(token):
     for prod_price in prod_prices: 
         price_in_cents = prod_price['attributes']['currencies']['USD']['amount']
         price_in_usd = price_in_cents // 100
-        #prod_id = prod_price['id']
         prod_sku = prod_price['attributes']['sku']
-        #prices[prod_id] = price_in_usd
         prices[prod_sku] = price_in_usd
     return prices
         
@@ -59,6 +58,7 @@ def get_product_by_id(token, id, prices):
     image_link = image_file.json()['data']['link']['href']
     return product_name, product_description, amount_in_stock, price, image_link
 
+
 def add_product_to_cart(token, user_id, prod_id, quantity):
     headers = {
         'Authorization': f'Bearer {token}',
@@ -70,9 +70,8 @@ def add_product_to_cart(token, user_id, prod_id, quantity):
         "quantity": quantity,
         }
     }
-    #print(f'{user_id}, {prod_id}, {quantity}')
-    #print(f'https://api.moltin.com/v2/carts/{user_id}/items')
     response = requests.post(f'https://api.moltin.com/v2/carts/{user_id}/items', headers=headers, json=json_data)
+
 
 def get_cart(token, user_id):
     headers = {
@@ -100,16 +99,16 @@ def get_cart_item_names_and_ids(token, user_id):
     }
     cart = requests.get(f'https://api.moltin.com/v2/carts/{user_id}/items', headers=headers)
     cart_items = cart.json()['data']
-    prod_ids_names = [(item['id'], item['name']) for item in cart_items]
-    return prod_ids_names
+    prod_ids_with_names = [(item['id'], item['name']) for item in cart_items]
+    return prod_ids_with_names
 
 
 def remove_cart_item(token, user_id, prod_id):
     headers = {
         'Authorization': f'Bearer {token}',
     }
-    #https://api.moltin.com/v2/carts/:reference/items/:id
     response = requests.delete(f'https://api.moltin.com/v2/carts/{user_id}/items/{prod_id}', headers=headers)
+
 
 def save_client(token, user_id, email):
     headers = {

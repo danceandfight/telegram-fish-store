@@ -20,6 +20,7 @@ def start(bot, update):
     update.message.reply_text('Please choose:', reply_markup=reply_markup)
     return "HANDLE_MENU"
 
+
 def make_keyboard(names_and_ids):
     keyboard = [[InlineKeyboardButton(str(name), callback_data=str(prod_id))] for name, prod_id in names_and_ids]
     keyboard.append([InlineKeyboardButton('View cart', callback_data='cart')])
@@ -30,8 +31,6 @@ def make_keyboard(names_and_ids):
 def handle_menu(bot, update):
     query = update.callback_query
     if query.data == 'cart':
-        #message = get_cart(ep_token, query.message.chat_id)
-        #bot.send_message(chat_id=query.message.chat_id, text=message)
         reply_markup, message = get_cart_message(ep_token, query.message.chat_id)
         update.callback_query.message.reply_text(message, reply_markup=reply_markup)
         bot.delete_message(
@@ -118,12 +117,13 @@ def handle_cart(bot, update):
         )
         return "HANDLE_CART"   
 
+
 def handle_email(bot, update):
     chat_id = update.message.chat_id
     email = update.message.text
     update.message.reply_text(f'You submitted {email}')
     save_client(ep_token, chat_id, email)
-    #bot.send_message(chat_id=query.message.chat_id, text=query.data)
+
 
 def handle_users_reply(bot, update):
     """
@@ -187,8 +187,6 @@ if __name__ == '__main__':
     global tg_token 
     global ep_token
     tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    #headers = 
-    #ep_token = os.getenv("ELASTICPATH_TOKEN")
     client_id = os.getenv("CLIENT_ID")
     client_secret = os.getenv("CLIENT_SECRET")
     global prices
@@ -196,13 +194,10 @@ if __name__ == '__main__':
     prices = get_products_prices(ep_token)
     global names_and_ids
     names_and_ids = get_products_names_ids(ep_token)
-    #ep_token = '929e89ef5a29bcb4c433edf3053ddd426bc015b3'
-    #print(ep_token)
 
     updater = Updater(tg_token)
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CallbackQueryHandler(handle_users_reply))
     dispatcher.add_handler(MessageHandler(Filters.text, handle_users_reply))
-    #dispatcher.add_handler(CallbackQueryHandler(button))
     dispatcher.add_handler(CommandHandler('start', handle_users_reply))
     updater.start_polling()
