@@ -41,7 +41,7 @@ pip install -r requirements.txt
 
 Зарегестрируйтесь и создайте новую базу данных [Redis](https://redis.io). Вам потребуются `host`, `port` и `password`.
 
-Создайте аккаунт в сервисе [ElasticPath](elasticpath.com), получите из него CLIENT_ID, CLIENT_SECRET и токен.
+Создайте аккаунт в сервисе [ElasticPath](elasticpath.com), получите из него CLIENT_ID и CLIENT_SECRET.
 
 Создайте файл `.env` в каталоге `fish-store-bot/` и положите туда код такого вида, заменив токены на свои:
 ```sh
@@ -51,7 +51,6 @@ REDIS_PORT=18012
 REDIS_PASSWORD='zMdDfsw243t0gkrsdmw32s0m03cmsamV'
 CLIENT_ID=88f8wdcd3283f484nc429ncvt500rfhufhuw38392m
 CLIENT_SECRET=6d7dfwn843mxyg5h,1234546789tnf3mccfhew
-ELASTICPATH_TOKEN=ff8h8f38cng5mhecn4gm943xqh4w9t4q3pqhmrhx
 ```
 
 ## Как пользоваться
