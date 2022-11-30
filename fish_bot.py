@@ -9,7 +9,7 @@ from telegram.ext import Filters, Updater
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler
 
 from elasticpath_requests import (get_products_names_ids, get_products_prices, 
-    get_product_by_id,get_elasticpath_token, add_product_to_cart, get_cart, 
+    get_product_by_id,get_elasticpath_token, add_product_to_cart, get_formatted_cart_content, 
     get_cart_item_names_and_ids, remove_cart_item, save_client)
 
 _database = None
@@ -59,7 +59,7 @@ def handle_menu(bot, update):
 
 
 def get_cart_message(token, user_id):
-    message = get_cart(ep_token, user_id)
+    message = get_formatted_cart_content(ep_token, user_id)
     cart_item_ids = get_cart_item_names_and_ids(ep_token, user_id)
     keyboard = [[InlineKeyboardButton(f'Remove {item_name}', callback_data=str(item_id))] for item_id, item_name in cart_item_ids]
     keyboard += [[InlineKeyboardButton('Back to menu', callback_data='menu')]]

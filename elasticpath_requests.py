@@ -82,14 +82,14 @@ def add_product_to_cart(token, user_id, prod_id, quantity):
     response.raise_for_status()
 
 
-def get_cart(token, user_id):
+def get_formatted_cart_content(token, user_id):
     headers = {
         'Authorization': f'Bearer {token}',
     }
     cart = requests.get(f'https://api.moltin.com/v2/carts/{user_id}/items', headers=headers)
     cart.raise_for_status()
     cart_items = cart.json()['data']
-    message_with_cart_content = ''
+    formatted_cart_content = ''
     for item in cart_items:
         item_name = item['name']
         item_description = item['description']
@@ -97,10 +97,10 @@ def get_cart(token, user_id):
         combined_price = item['meta']['display_price']['with_tax']['value']['formatted']
         quantity = item['quantity']
         item_in_cart = f"{item_name}\n{item_description}\n{item_price}\n{quantity}kg in cart for {combined_price}\n\n"
-        message_with_cart_content += item_in_cart
+        formatted_cart_content += item_in_cart
     cart_value = cart.json()['meta']['display_price']['with_tax']['formatted']
-    message_with_cart_content += f'Total: {cart_value}'
-    return message_with_cart_content
+    formatted_cart_content += f'Total: {cart_value}'
+    return formatted_cart_content
 
 
 def get_cart_item_names_and_ids(token, user_id):
