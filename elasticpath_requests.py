@@ -9,6 +9,7 @@ def get_elasticpath_token(client_id, client_secret):
     }
 
     response = requests.post('https://api.moltin.com/oauth/access_token', data=data)
+    response.raise_for_status()
     token = response.json()['access_token']
     return token
 
@@ -20,6 +21,7 @@ def get_products_names_ids(token):
     }
     
     products = requests.get('https://api.moltin.com/pcm/products', headers=headers)
+    products.raise_for_status()
     
     names_and_ids = [(item['attributes']['name'], item['id']) for item in products.json()['data']]
     
@@ -30,8 +32,10 @@ def get_products_prices(token):
         'Authorization': f'Bearer {token}',
     }
     pricebooks = requests.get('https://api.moltin.com/pcm/pricebooks', headers=headers)
+    pricebooks.raise_for_status()
     pricebook_id = pricebooks.json()['data'][0]['id']
     pricebook = requests.get(f'https://api.moltin.com/pcm/pricebooks/{pricebook_id}?include=prices', headers=headers)
+    pricebook.raise_for_status()
     prod_prices = pricebook.json()['included']
     prices = {}
     for prod_price in prod_prices: 
@@ -47,14 +51,17 @@ def get_product_by_id(token, id, prices):
         'Authorization': f'Bearer {token}',
     }
     product = requests.get(f'https://api.moltin.com/pcm/products/{id}', headers=headers)
+    product.raise_for_status()
     product_name = product.json()['data']['attributes']['name']
     product_sku = product.json()['data']['attributes']['sku']
     product_description = product.json()['data']['attributes']['description']
     inventory = requests.get(f'https://api.moltin.com/v2/inventories/{id}', headers=headers)
+    inventory.raise_for_status()
     amount_in_stock = inventory.json()['data']['available']
     price = prices[product_sku]
     image_id = product.json()['data']['relationships']['main_image']['data']['id']
     image_file = requests.get(f'https://api.moltin.com/v2/files/{image_id}', headers=headers)
+    image_file.raise_for_status()
     image_link = image_file.json()['data']['link']['href']
     return product_name, product_description, amount_in_stock, price, image_link
 
@@ -71,6 +78,7 @@ def add_product_to_cart(token, user_id, prod_id, quantity):
         }
     }
     response = requests.post(f'https://api.moltin.com/v2/carts/{user_id}/items', headers=headers, json=json_data)
+    response.raise_for_status()
 
 
 def get_cart(token, user_id):
@@ -78,6 +86,7 @@ def get_cart(token, user_id):
         'Authorization': f'Bearer {token}',
     }
     cart = requests.get(f'https://api.moltin.com/v2/carts/{user_id}/items', headers=headers)
+    cart.raise_for_status()
     cart_items = cart.json()['data']
     message_with_cart_content = ''
     for item in cart_items:
@@ -98,6 +107,7 @@ def get_cart_item_names_and_ids(token, user_id):
         'Authorization': f'Bearer {token}',
     }
     cart = requests.get(f'https://api.moltin.com/v2/carts/{user_id}/items', headers=headers)
+    cart.raise_for_status()
     cart_items = cart.json()['data']
     prod_ids_with_names = [(item['id'], item['name']) for item in cart_items]
     return prod_ids_with_names
@@ -108,6 +118,7 @@ def remove_cart_item(token, user_id, prod_id):
         'Authorization': f'Bearer {token}',
     }
     response = requests.delete(f'https://api.moltin.com/v2/carts/{user_id}/items/{prod_id}', headers=headers)
+    response.raise_for_status()
 
 
 def save_client(token, user_id, email):
@@ -122,6 +133,7 @@ def save_client(token, user_id, email):
         },
     }
     response = requests.post('https://api.moltin.com/v2/customers', headers=headers, json=json_data)
+    response.raise_for_status()
 
 
 
