@@ -52,9 +52,10 @@ def get_product_by_id(token, id, prices):
     }
     product = requests.get(f'https://api.moltin.com/pcm/products/{id}', headers=headers)
     product.raise_for_status()
-    product_name = product.json()['data']['attributes']['name']
-    product_sku = product.json()['data']['attributes']['sku']
-    product_description = product.json()['data']['attributes']['description']
+    product_json = product.json()
+    product_name = product_json['data']['attributes']['name']
+    product_sku = product_json['data']['attributes']['sku']
+    product_description = product_json['data']['attributes']['description']
     inventory = requests.get(f'https://api.moltin.com/v2/inventories/{id}', headers=headers)
     inventory.raise_for_status()
     amount_in_stock = inventory.json()['data']['available']
