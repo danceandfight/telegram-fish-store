@@ -184,15 +184,11 @@ def get_database_connection():
 
 if __name__ == '__main__':
     load_dotenv()
-    global tg_token 
-    global ep_token
     tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
     client_id = os.getenv("CLIENT_ID")
     client_secret = os.getenv("CLIENT_SECRET")
-    global prices
     ep_token = get_elasticpath_token(client_id, client_secret)
     prices = get_products_prices(ep_token)
-    global names_and_ids
     names_and_ids = get_products_names_ids(ep_token)
 
     updater = Updater(tg_token)
