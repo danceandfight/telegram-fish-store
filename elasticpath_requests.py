@@ -22,10 +22,11 @@ def get_products_names_ids(token):
     
     products = requests.get('https://api.moltin.com/pcm/products', headers=headers)
     products.raise_for_status()
-    
+
     names_and_ids = [(item['attributes']['name'], item['id']) for item in products.json()['data']]
-    
+       
     return names_and_ids
+
 
 def get_products_prices(token):
     headers = {
@@ -60,7 +61,7 @@ def get_product_by_id(token, id, prices):
     inventory.raise_for_status()
     amount_in_stock = inventory.json()['data']['available']
     price = prices[product_sku]
-    image_id = product.json()['data']['relationships']['main_image']['data']['id']
+    image_id = product['data']['relationships']['main_image']['data']['id']
     image_file = requests.get(f'https://api.moltin.com/v2/files/{image_id}', headers=headers)
     image_file.raise_for_status()
     image_link = image_file.json()['data']['link']['href']

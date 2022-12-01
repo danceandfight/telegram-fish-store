@@ -3,6 +3,7 @@ import logging
 import redis
 
 from dotenv import load_dotenv
+from functools import partial
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultDocument
 from telegram.ext import Filters, Updater
@@ -15,7 +16,8 @@ from elasticpath_requests import (get_products_names_ids, get_products_prices,
 _database = None
 
 
-def start(bot, update):
+def start(ep_token, bot, update):
+    names_and_ids = get_products_names_ids(ep_token)
     reply_markup = make_keyboard(names_and_ids)
     update.message.reply_text('Please choose:', reply_markup=reply_markup)
     return "HANDLE_MENU"
@@ -28,7 +30,7 @@ def make_keyboard(names_and_ids):
     return reply_markup
 
 
-def handle_menu(bot, update):
+def handle_menu(ep_token, bot, update):
     query = update.callback_query
     if query.data == 'cart':
         reply_markup, message = get_cart_message(ep_token, query.message.chat_id)
@@ -38,8 +40,8 @@ def handle_menu(bot, update):
             message_id=query.message.message_id,
         )
         return "HANDLE_CART"
+    prices = get_products_prices(ep_token)
     product_name, product_description, amount_in_stock, price, image_link = get_product_by_id(ep_token, query.data, prices)
-    
     caption = f"{product_name}\n{product_description}\nIn stock: {amount_in_stock} kgs\n{price}$ per kg\n"
     keyboard = [
         [InlineKeyboardButton('Back to menu', callback_data='menu')], 
@@ -58,7 +60,7 @@ def handle_menu(bot, update):
     return "HANDLE_DESCRIPTION"
 
 
-def get_cart_message(token, user_id):
+def get_cart_message(ep_token, user_id):
     message = get_formatted_cart_content(ep_token, user_id)
     cart_item_ids = get_cart_item_names_and_ids(ep_token, user_id)
     keyboard = [[InlineKeyboardButton(f'Remove {item_name}', callback_data=str(item_id))] for item_id, item_name in cart_item_ids]
@@ -68,9 +70,10 @@ def get_cart_message(token, user_id):
     return reply_markup, message
 
 
-def handle_description(bot, update):
+def handle_description(ep_token, bot, update):
     query = update.callback_query
     if query.data == 'menu':
+        names_and_ids = get_products_names_ids(ep_token)
         reply_markup = make_keyboard(names_and_ids)
         update.callback_query.message.reply_text('Please choose:', reply_markup=reply_markup)
         bot.delete_message(
@@ -88,15 +91,15 @@ def handle_description(bot, update):
         return "HANDLE_CART"
     else:
         quantity, prod_id = query.data.split('/')
-        print(query.message.chat_id)
         add_product_to_cart(ep_token, query.message.chat_id, prod_id, int(quantity))
         return "HANDLE_DESCRIPTION"
 
 
-def handle_cart(bot, update):
+def handle_cart(ep_token, bot, update):
     query = update.callback_query
     chat_id = query.message.chat_id
     if query.data == 'menu':
+        names_and_ids = get_products_names_ids(ep_token)
         reply_markup = make_keyboard(names_and_ids)
         update.callback_query.message.reply_text('Please choose:', reply_markup=reply_markup)
         bot.delete_message(
@@ -118,14 +121,14 @@ def handle_cart(bot, update):
         return "HANDLE_CART"   
 
 
-def handle_email(bot, update):
+def handle_email(ep_token, bot, update):
     chat_id = update.message.chat_id
     email = update.message.text
     update.message.reply_text(f'You submitted {email}')
     save_client(ep_token, chat_id, email)
 
 
-def handle_users_reply(bot, update):
+def handle_users_reply(ep_token, bot, update):
     """
     Функция, которая запускается при любом сообщении от пользователя и решает как его обработать.
     Эта функция запускается в ответ на эти действия пользователя:
@@ -151,13 +154,13 @@ def handle_users_reply(bot, update):
         user_state = 'START'
     else:
         user_state = db.get(chat_id).decode("utf-8")
-    
+
     states_functions = {
-        'START': start,
-        'HANDLE_MENU': handle_menu,
-        'HANDLE_DESCRIPTION': handle_description,
-        'HANDLE_CART': handle_cart,
-        'WAITING_EMAIL': handle_email,
+        'START': partial(start, ep_token),
+        'HANDLE_MENU': partial(handle_menu, ep_token),
+        'HANDLE_DESCRIPTION': partial(handle_description, ep_token),
+        'HANDLE_CART': partial(handle_cart, ep_token),
+        'WAITING_EMAIL': partial(handle_email, ep_token),
         }
     state_handler = states_functions[user_state]
     # Если вы вдруг не заметите, что python-telegram-bot перехватывает ошибки.
@@ -181,19 +184,21 @@ def get_database_connection():
         _database = redis.Redis(host=database_host, port=database_port, password=database_password)
     return _database
 
-
-if __name__ == '__main__':
+def main():
     load_dotenv()
     tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
     client_id = os.getenv("CLIENT_ID")
     client_secret = os.getenv("CLIENT_SECRET")
     ep_token = get_elasticpath_token(client_id, client_secret)
-    prices = get_products_prices(ep_token)
-    names_and_ids = get_products_names_ids(ep_token)
 
     updater = Updater(tg_token)
     dispatcher = updater.dispatcher
-    dispatcher.add_handler(CallbackQueryHandler(handle_users_reply))
-    dispatcher.add_handler(MessageHandler(Filters.text, handle_users_reply))
-    dispatcher.add_handler(CommandHandler('start', handle_users_reply))
+    partial_handle_users_reply = partial(handle_users_reply, ep_token)
+    dispatcher.add_handler(CallbackQueryHandler(partial_handle_users_reply))
+    dispatcher.add_handler(MessageHandler(Filters.text, partial_handle_users_reply))
+    dispatcher.add_handler(CommandHandler('start', partial_handle_users_reply))
     updater.start_polling()
+
+
+if __name__ == '__main__':
+    main()
